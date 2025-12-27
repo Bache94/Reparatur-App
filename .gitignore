@@ -25,3 +25,6 @@ DerivedData/
 # Other
 *.DS_Store
 models.json
+Secrets.swift
+Reparatur App/Secrets.swift
+
