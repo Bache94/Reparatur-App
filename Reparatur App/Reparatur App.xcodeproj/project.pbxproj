@@ -6,21 +6,8 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		CAD2F3D52F001F83003DA99A /* AIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD2F3D02F001F83003DA99A /* AIService.swift */; };
-		CAD2F3D62F001F83003DA99A /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD2F3D12F001F83003DA99A /* CameraManager.swift */; };
-		CAD2F3D72F001F83003DA99A /* PartIdentificationResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD2F3D22F001F83003DA99A /* PartIdentificationResult.swift */; };
-		CAD2F3D82F001F83003DA99A /* ResultCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD2F3D32F001F83003DA99A /* ResultCard.swift */; };
-		CAD2F3D92F001F83003DA99A /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAD2F3D42F001F83003DA99A /* Secrets.swift */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
 		CAD2F3C22F001EAB003DA99A /* Reparatur App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Reparatur App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		CAD2F3D02F001F83003DA99A /* AIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIService.swift; sourceTree = "<group>"; };
-		CAD2F3D12F001F83003DA99A /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManager.swift; sourceTree = "<group>"; };
-		CAD2F3D22F001F83003DA99A /* PartIdentificationResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartIdentificationResult.swift; sourceTree = "<group>"; };
-		CAD2F3D32F001F83003DA99A /* ResultCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultCard.swift; sourceTree = "<group>"; };
-		CAD2F3D42F001F83003DA99A /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -47,11 +34,6 @@
 			children = (
 				CAD2F3C42F001EAB003DA99A /* Reparatur App */,
 				CAD2F3C32F001EAB003DA99A /* Products */,
-				CAD2F3D02F001F83003DA99A /* AIService.swift */,
-				CAD2F3D12F001F83003DA99A /* CameraManager.swift */,
-				CAD2F3D22F001F83003DA99A /* PartIdentificationResult.swift */,
-				CAD2F3D32F001F83003DA99A /* ResultCard.swift */,
-				CAD2F3D42F001F83003DA99A /* Secrets.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -137,11 +119,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CAD2F3D52F001F83003DA99A /* AIService.swift in Sources */,
-				CAD2F3D62F001F83003DA99A /* CameraManager.swift in Sources */,
-				CAD2F3D72F001F83003DA99A /* PartIdentificationResult.swift in Sources */,
-				CAD2F3D82F001F83003DA99A /* ResultCard.swift in Sources */,
-				CAD2F3D92F001F83003DA99A /* Secrets.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

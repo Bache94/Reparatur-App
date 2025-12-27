@@ -7,25 +7,41 @@ class AIService {
     
     private let apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
     
-    func identifyPart(image: UIImage) async throws -> PartIdentificationResult {
+    func identifyPart(image: UIImage, language: AppLanguage) async throws -> PartIdentificationResult {
         guard let imageData = image.jpegData(compressionQuality: 0.7) else {
             throw NSError(domain: "ImageError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Could not process image"])
         }
         
         let base64Image = imageData.base64EncodedString()
         
-        let prompt = """
-        Du bist en Experten-KI für Kaffeemaschinen-Ersatzteile. Analysiere das Bild und identifiziere das Ersatzteil.
-        Gib NUR valides JSON zurück, ohne Markdown-Formatierung, in exakt diesem Format:
-        {
-            "partName": "Präziser deutscher Name des Teils",
-            "likelyModels": ["Modell A", "Modell B"],
-            "searchQuery": "Optimierter Suchstring für Google Shopping",
-            "estimatedPriceRange": "XX€ - YY€",
-            "confidence": "Hoch/Mittel/Niedrig"
+        let prompt: String
+        if language == .german {
+            prompt = """
+            Du bist eine Experten-KI für Kaffeemaschinen-Ersatzteile. Analysiere das Bild und identifiziere das Ersatzteil.
+            Gib NUR valides JSON zurück, ohne Markdown-Formatierung, in exakt diesem Format:
+            {
+                "partName": "Präziser deutscher Name des Teils",
+                "likelyModels": ["Modell A", "Modell B"],
+                "searchQuery": "Optimierter Suchstring für Google Shopping",
+                "estimatedPriceRange": "XX€ - YY€",
+                "confidence": "Hoch/Mittel/Niedrig"
+            }
+            Wenn es kein Ersatzteil ist, setze partName auf "Unbekannt".
+            """
+        } else {
+            prompt = """
+            You are an expert AI for coffee machine spare parts. Analyze the image and identify the spare part.
+            Return ONLY valid JSON, without markdown formatting, in exactly this format:
+            {
+                "partName": "Precise English name of the part",
+                "likelyModels": ["Model A", "Model B"],
+                "searchQuery": "Optimized search string for Google Shopping USA",
+                "estimatedPriceRange": "$XX - $YY",
+                "confidence": "High/Medium/Low"
+            }
+            If it is not a spare part, set partName to "Unknown".
+            """
         }
-        Wenn es kein Ersatzteil ist, setze partName auf "Unbekannt".
-        """
         
         let filePart = [
             "inline_data": [

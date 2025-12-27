@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ResultCard: View {
+    @StateObject private var languageService = LanguageService.shared
     let result: PartIdentificationResult
     
     var body: some View {
@@ -19,45 +20,56 @@ struct ResultCard: View {
             
             // Part Name
             Text(result.partName)
-                .font(.title)
-                .fontWeight(.bold)
+                .font(.system(size: 28, weight: .heavy, design: .rounded))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.primary)
+                .shadow(color: .black.opacity(0.1), radius: 1, x: 0, y: 1)
             
             Divider()
             
             // Models
             if !result.likelyModels.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Kompatible Modelle:")
+                    Text(languageService.localizedString(.compatibleModels))
                         .font(.headline)
                         .foregroundColor(.secondary)
+                        .textCase(.uppercase)
                     
                     ForEach(result.likelyModels, id: \.self) { model in
                         HStack {
-                            Image(systemName: "checkmark.circle.fill")
+                            Image(systemName: "checkmark.seal.fill")
                                 .foregroundColor(.green)
                             Text(model)
                                 .font(.body)
+                                .fontWeight(.medium)
                         }
+                        .padding(.vertical, 2)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
             }
             
             // Price
-            VStack {
-                Text("Geschätzter Preis")
+            VStack(spacing: 5) {
+                Text(languageService.localizedString(.estimatedPrice))
                     .font(.caption)
+                    .fontWeight(.bold)
                     .foregroundColor(.secondary)
+                    .textCase(.uppercase)
+                
                 Text(result.estimatedPriceRange)
-                    .font(.title2)
-                    .fontWeight(.heavy)
-                    .foregroundColor(.blue)
+                    .font(.system(size: 32, weight: .black, design: .rounded))
+                    .foregroundStyle(LinearGradient(colors: [.blue, .purple], startPoint: .leading, endPoint: .trailing))
             }
+            .frame(maxWidth: .infinity)
             .padding()
-            .background(Color.blue.opacity(0.1))
-            .cornerRadius(12)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(UIColor.systemBackground))
+                    .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+            )
+            .padding(.horizontal)
             
             // Action Button
             Button(action: {
@@ -67,21 +79,26 @@ struct ResultCard: View {
             }) {
                 HStack {
                     Image(systemName: "cart.fill")
-                    Text("Preisvergleich starten")
+                    Text(languageService.localizedString(.startPriceCompare))
                 }
                 .font(.headline)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.blue)
+                .background(
+                    LinearGradient(gradient: Gradient(colors: [.blue, .indigo]), startPoint: .leading, endPoint: .trailing)
+                )
                 .cornerRadius(14)
-                .shadow(radius: 5)
+                .shadow(color: .indigo.opacity(0.4), radius: 8, x: 0, y: 4)
             }
         }
-        .padding()
-        .background(Color(UIColor.secondarySystemBackground))
-        .cornerRadius(20)
-        .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+        .padding(.vertical, 30)
+        .padding(.horizontal, 20)
+        .background(
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color(UIColor.secondarySystemGroupedBackground))
+                .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
+        )
         .padding()
     }
     

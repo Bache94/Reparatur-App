@@ -7,6 +7,10 @@ struct ContentView: View {
     @State private var isAnalyzing = false
     @State private var errorMessage: String?
     
+    @State private var pulseStart = false
+    
+    @StateObject private var languageService = LanguageService.shared
+    
     // Animation States
     @State private var showSplash = true
     @State private var wrenchRotation = 0.0
@@ -32,7 +36,7 @@ struct ContentView: View {
                     .frame(width: 150, height: 150)
                     .rotationEffect(.degrees(wrenchRotation))
                 
-                Text("Reparatur Helfer")
+                Text(languageService.localizedString(.appName))
                     .font(.largeTitle)
                     .fontWeight(.heavy)
                     .foregroundColor(.white)
@@ -49,8 +53,9 @@ struct ContentView: View {
                 wrenchRotation = 20
             }
             
-            // Dismiss Splash after 2.5 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            
+            // Dismiss Splash after 3.5 seconds (1 second longer)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
                 withAnimation {
                     showSplash = false
                 }
@@ -61,9 +66,47 @@ struct ContentView: View {
     var MainContent: some View {
         NavigationView {
             ZStack {
-                // Background
-                Color(UIColor.systemGroupedBackground)
+                // Professional Gradient Background
+                LinearGradient(gradient: Gradient(colors: [Color(UIColor.systemBackground), Color(UIColor.systemGray6)]), startPoint: .top, endPoint: .bottom)
                     .ignoresSafeArea()
+                
+                // Fine Pattern Overlay (optional for texture)
+                Rectangle()
+                    .fill(
+                        LinearGradient(gradient: Gradient(colors: [.blue.opacity(0.05), .clear]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                    .ignoresSafeArea()
+                
+                // MadeByBache Footer
+                VStack {
+                    Spacer()
+                    Text("MadeByBache")
+                        .font(.custom("Futura", size: 12))
+                        .foregroundColor(.secondary.opacity(0.7))
+                        .padding(.bottom, 5)
+                }
+                .ignoresSafeArea(.keyboard)
+                
+                // Language Toggle (Top Right)
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            withAnimation {
+                                let newLang: AppLanguage = (languageService.currentLanguage == .german) ? .english : .german
+                                languageService.setLanguage(newLang)
+                            }
+                        }) {
+                            Text(languageService.currentLanguage.flag)
+                                .font(.system(size: 40)) // Big Flag
+                                .shadow(radius: 2)
+                        }
+                        .padding(.top, 50) // Adjust for status bar
+                        .padding(.trailing, 20)
+                    }
+                    Spacer()
+                }
+                .zIndex(100) // Ensure it's on top
                 
                 VStack(spacing: 30) {
                     
@@ -73,7 +116,7 @@ struct ContentView: View {
                             Image(systemName: "wrench.and.screwdriver.fill")
                                 .font(.system(size: 50))
                                 .foregroundColor(.blue)
-                            Text("Reparatur Helfer")
+                            Text(languageService.localizedString(.appName))
                                 .font(.title)
                                 .fontWeight(.bold)
                         }
@@ -99,7 +142,7 @@ struct ContentView: View {
                         VStack(spacing: 20) {
                             ProgressView()
                                 .scaleEffect(1.5)
-                            Text("Analysiere Bauteil...")
+                            Text(languageService.localizedString(.analyzePart))
                                 .font(.headline)
                                 .foregroundColor(.secondary)
                         }
@@ -119,7 +162,7 @@ struct ContentView: View {
                         }) {
                             HStack {
                                 Image(systemName: "camera.fill")
-                                Text("Neues Foto")
+                                Text(languageService.localizedString(.newPhoto))
                             }
                             .font(.headline)
                             .foregroundColor(.white)
@@ -137,25 +180,37 @@ struct ContentView: View {
                         Spacer()
                         
                         VStack(spacing: 20) {
-                            Text("Fotografiere das defekte Teil")
+                            Text(languageService.localizedString(.takePhotoInstruction))
                                 .font(.headline)
                                 .foregroundColor(.secondary)
                             
                             Button(action: {
                                 showCamera = true
                             }) {
-                                VStack {
-                                    Image(systemName: "camera.fill")
-                                        .font(.system(size: 40))
-                                    Text("Foto aufnehmen")
-                                        .fontWeight(.semibold)
+                                ZStack {
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                                        )
+                                        .frame(width: 160, height: 160)
+                                        .shadow(color: .blue.opacity(0.4), radius: 20, x: 0, y: 10)
+                                    
+                                    Circle()
+                                        .stroke(Color.white.opacity(0.3), lineWidth: 4)
+                                        .frame(width: 150, height: 150)
+                                    
+                                    VStack {
+                                        Image(systemName: "camera.fill")
+                                            .font(.system(size: 44))
+                                        Text(languageService.localizedString(.takePhotoButton))
+                                            .fontWeight(.bold)
+                                            .font(.subheadline)
+                                    }
+                                    .foregroundColor(.white)
                                 }
-                                .frame(width: 150, height: 150)
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .clipShape(Circle())
-                                .shadow(color: .blue.opacity(0.4), radius: 10, x: 0, y: 10)
                             }
+                            .scaleEffect(isAnalyzing ? 0.9 : 1.0)
+                            .animation(Animation.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: isAnalyzing) // Subtle pulse hint
                         }
                         .padding()
                         
@@ -192,7 +247,7 @@ struct ContentView: View {
         
         Task {
             do {
-                let result = try await AIService.shared.identifyPart(image: image)
+                let result = try await AIService.shared.identifyPart(image: image, language: languageService.currentLanguage)
                 DispatchQueue.main.async {
                     withAnimation {
                         self.identificationResult = result
@@ -202,7 +257,7 @@ struct ContentView: View {
             } catch {
                 DispatchQueue.main.async {
                     withAnimation {
-                        self.errorMessage = "Fehler bei der Analyse: \(error.localizedDescription)"
+                        self.errorMessage = "\(self.languageService.localizedString(.errorPrefix))\(error.localizedDescription)"
                         self.isAnalyzing = false
                         // Reset image on error so user can try again easily
                         if self.identificationResult == nil {
