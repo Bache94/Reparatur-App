@@ -11,6 +11,7 @@ struct ContentView: View {
     
     // Disclaimer State
     @AppStorage("hasAcceptedDisclaimer") private var hasAcceptedDisclaimer = false
+    @State private var showDisclaimer = false
     
     @State private var pulseStart = false
     

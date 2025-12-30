@@ -34,10 +34,9 @@ class LanguageService: ObservableObject {
            let lang = AppLanguage(rawValue: stored) {
             self.currentLanguage = lang
         } else {
-            // Auto-detect
-            // Fallback for older iOS versions where Locale.current.language might not work as expected
-            let systemLang = Locale.current.identifier
-            if systemLang.contains("de") {
+            // Auto-detect using preferred languages
+            let preferredLanguage = Locale.preferredLanguages.first ?? Locale.current.identifier
+            if preferredLanguage.hasPrefix("de") {
                 self.currentLanguage = .german
             } else {
                 self.currentLanguage = .english
