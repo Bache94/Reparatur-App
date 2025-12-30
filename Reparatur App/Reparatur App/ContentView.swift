@@ -3,13 +3,16 @@ import SwiftUI
 struct ContentView: View {
     @State private var showCamera = false
     @State private var inputImage: UIImage?
-    @State private var identificationResult: PartIdentificationResult?
+    @State private var identificationResult: AnalysisResult?
     @State private var isAnalyzing = false
     @State private var errorMessage: String?
+    
+    @State private var analysisMode: AnalysisMode = .part
     
     @State private var pulseStart = false
     
     @StateObject private var languageService = LanguageService.shared
+    @StateObject private var audioRecorder = AudioRecorder.shared
     
     // Animation States
     @State private var showSplash = true
@@ -98,8 +101,8 @@ struct ContentView: View {
                             }
                         }) {
                             Text(languageService.currentLanguage.flag)
-                                .font(.system(size: 40)) // Big Flag
-                                .shadow(radius: 2)
+                                .font(.system(size: 24)) // Small Flag
+                                .shadow(radius: 1)
                         }
                         .padding(.top, 50) // Adjust for status bar
                         .padding(.trailing, 20)
@@ -109,6 +112,19 @@ struct ContentView: View {
                 .zIndex(100) // Ensure it's on top
                 
                 VStack(spacing: 30) {
+                    
+                    // Mode Switcher
+                    if !isAnalyzing && identificationResult == nil {
+                        Picker("Mode", selection: $analysisMode) {
+                            Text(languageService.currentLanguage == .german ? "Ersatzteil" : "Spare Part").tag(AnalysisMode.part)
+                            Text(languageService.currentLanguage == .german ? "Fehlercode" : "Error Code").tag(AnalysisMode.error)
+                            Text("Audio").tag(AnalysisMode.audio)
+                        }
+                        .pickerStyle(.segmented)
+                        .padding(.horizontal, 40)
+                        .padding(.top, 10)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                    }
                     
                     // Header
                     if !isAnalyzing && identificationResult == nil {
@@ -142,7 +158,7 @@ struct ContentView: View {
                         VStack(spacing: 20) {
                             ProgressView()
                                 .scaleEffect(1.5)
-                            Text(languageService.localizedString(.analyzePart))
+                            Text(analysisMode == .part ? languageService.localizedString(.analyzePart) : (languageService.currentLanguage == .german ? "Analysiere Fehler..." : "Analyzing Error..."))
                                 .font(.headline)
                                 .foregroundColor(.secondary)
                         }
@@ -153,16 +169,18 @@ struct ContentView: View {
                         }
                         
                         // Styled Back Button
+                        // Styled Back Button
                         Button(action: {
                             withAnimation {
                                 inputImage = nil
                                 identificationResult = nil
                                 errorMessage = nil
+                                audioRecorder.recordingURL = nil
                             }
                         }) {
                             HStack {
-                                Image(systemName: "camera.fill")
-                                Text(languageService.localizedString(.newPhoto))
+                                Image(systemName: "arrow.uturn.backward")
+                                Text(languageService.localizedString(.backToMenu))
                             }
                             .font(.headline)
                             .foregroundColor(.white)
@@ -176,41 +194,45 @@ struct ContentView: View {
                         .padding(.bottom, 20)
                         
                     } else {
-                        // Main State (Waiting for Photo)
+                        // Main State (Waiting for Photo or Audio)
                         Spacer()
                         
                         VStack(spacing: 20) {
-                            Text(languageService.localizedString(.takePhotoInstruction))
+                            Text(instructionText)
                                 .font(.headline)
                                 .foregroundColor(.secondary)
                             
                             Button(action: {
-                                showCamera = true
+                                if analysisMode == .audio {
+                                    toggleRecording()
+                                } else {
+                                    showCamera = true
+                                }
                             }) {
                                 ZStack {
                                     Circle()
                                         .fill(
-                                            LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .topLeading, endPoint: .bottomTrailing)
+                                            LinearGradient(gradient: Gradient(colors: actionButtonColors), startPoint: .topLeading, endPoint: .bottomTrailing)
                                         )
                                         .frame(width: 160, height: 160)
-                                        .shadow(color: .blue.opacity(0.4), radius: 20, x: 0, y: 10)
+                                        .shadow(color: actionButtonShadowColor, radius: 20, x: 0, y: 10)
                                     
                                     Circle()
                                         .stroke(Color.white.opacity(0.3), lineWidth: 4)
                                         .frame(width: 150, height: 150)
                                     
                                     VStack {
-                                        Image(systemName: "camera.fill")
+                                        Image(systemName: actionButtonIcon)
                                             .font(.system(size: 44))
-                                        Text(languageService.localizedString(.takePhotoButton))
+                                        Text(actionButtonLabel)
                                             .fontWeight(.bold)
                                             .font(.subheadline)
                                     }
                                     .foregroundColor(.white)
                                 }
                             }
-                            .scaleEffect(isAnalyzing ? 0.9 : 1.0)
-                            .animation(Animation.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: isAnalyzing) // Subtle pulse hint
+                            .scaleEffect(isAnalyzing || audioRecorder.isRecording ? 0.9 : 1.0)
+                            .animation(Animation.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: isAnalyzing || audioRecorder.isRecording) // Subtle pulse hint
                         }
                         .padding()
                         
@@ -230,13 +252,89 @@ struct ContentView: View {
                 }
             }
             .navigationBarHidden(true)
-            .sheet(isPresented: $showCamera, onDismiss: analyzeImage) {
+            .sheet(isPresented: $showCamera, onDismiss: analyzeMedia) {
                 CameraManager(selectedImage: $inputImage)
             }
         }
     }
     
-    func analyzeImage() {
+    var instructionText: String {
+        switch analysisMode {
+        case .part: return languageService.localizedString(.takePhotoInstruction)
+        case .error: return languageService.currentLanguage == .german ? "Fotografiere den Fehlercode" : "Photograph the error code"
+        case .audio: return audioRecorder.isRecording ? (languageService.currentLanguage == .german ? "Aufnahme läuft..." : "Recording...") : (languageService.currentLanguage == .german ? "Nimm das Geräusch auf" : "Record the sound")
+        }
+    }
+    
+    var actionButtonColors: [Color] {
+        if analysisMode == .audio && audioRecorder.isRecording {
+            return [.red, .orange]
+        }
+        return [.blue, .purple]
+    }
+    
+    var actionButtonShadowColor: Color {
+        if analysisMode == .audio && audioRecorder.isRecording {
+            return .red.opacity(0.4)
+        }
+        return .blue.opacity(0.4)
+    }
+    
+    var actionButtonIcon: String {
+        switch analysisMode {
+        case .audio: return audioRecorder.isRecording ? "stop.fill" : "mic.fill"
+        default: return "camera.fill"
+        }
+    }
+    
+    var actionButtonLabel: String {
+        switch analysisMode {
+        case .audio: return audioRecorder.isRecording ? (languageService.currentLanguage == .german ? "Stopp" : "Stop") : (languageService.currentLanguage == .german ? "Aufnahme" : "Record")
+        case .part, .error: return languageService.localizedString(.takePhotoButton)
+        }
+    }
+    
+    func toggleRecording() {
+        if audioRecorder.isRecording {
+            audioRecorder.stopRecording()
+            // Wait a bit for file to save then analyze
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                analyzeMedia()
+            }
+        } else {
+            audioRecorder.startRecording()
+        }
+    }
+    
+    func analyzeMedia() {
+        if analysisMode == .audio {
+            guard let url = audioRecorder.recordingURL else { return }
+             withAnimation {
+                isAnalyzing = true
+                errorMessage = nil
+                identificationResult = nil
+            }
+             Task {
+                do {
+                    let result = try await AIService.shared.analyzeAudio(audioURL: url, language: languageService.currentLanguage)
+                    DispatchQueue.main.async {
+                        withAnimation {
+                            self.identificationResult = result
+                            self.isAnalyzing = false
+                        }
+                    }
+                } catch {
+                     DispatchQueue.main.async {
+                        withAnimation {
+                            self.errorMessage = "\(self.languageService.localizedString(.errorPrefix))\(error.localizedDescription)"
+                            self.isAnalyzing = false
+                        }
+                    }
+                }
+            }
+            return
+        }
+        
         guard let image = inputImage else { return }
         
         withAnimation {
@@ -247,7 +345,7 @@ struct ContentView: View {
         
         Task {
             do {
-                let result = try await AIService.shared.identifyPart(image: image, language: languageService.currentLanguage)
+                let result = try await AIService.shared.analyzeImage(image: image, mode: analysisMode, language: languageService.currentLanguage)
                 DispatchQueue.main.async {
                     withAnimation {
                         self.identificationResult = result
@@ -259,10 +357,6 @@ struct ContentView: View {
                     withAnimation {
                         self.errorMessage = "\(self.languageService.localizedString(.errorPrefix))\(error.localizedDescription)"
                         self.isAnalyzing = false
-                        // Reset image on error so user can try again easily
-                        if self.identificationResult == nil {
-                            // self.inputImage = nil // Optional: Keep image or reset? Keeping it is better UX usually, or showing retry.
-                        }
                     }
                 }
             }

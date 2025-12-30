@@ -77,6 +77,10 @@ class LanguageService: ObservableObject {
             return isGerman ? "Unbekannter Fehler" : "Unknown Error"
         case .cancel:
             return isGerman ? "Abbrechen" : "Cancel"
+        case .communityHelp:
+            return isGerman ? "Community fragen" : "Ask Community"
+        case .backToMenu:
+            return isGerman ? "Zurück zum Menü" : "Back to Menu"
         }
     }
     
@@ -92,5 +96,7 @@ class LanguageService: ObservableObject {
         case errorPrefix
         case unknownError
         case cancel
+        case communityHelp
+        case backToMenu
     }
 }
