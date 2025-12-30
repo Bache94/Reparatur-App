@@ -72,4 +72,14 @@ class AudioRecorder: NSObject, ObservableObject, AVAudioRecorderDelegate {
             isRecording = false
         }
     }
+    
+    func deleteRecording() {
+        guard let url = recordingURL else { return }
+        do {
+            try FileManager.default.removeItem(at: url)
+            recordingURL = nil
+        } catch {
+            print("Error deleting recording: \(error.localizedDescription)")
+        }
+    }
 }

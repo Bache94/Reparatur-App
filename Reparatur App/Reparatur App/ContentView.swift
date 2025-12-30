@@ -178,7 +178,7 @@ struct ContentView: View {
                                 inputImage = nil
                                 identificationResult = nil
                                 errorMessage = nil
-                                audioRecorder.recordingURL = nil
+                                audioRecorder.deleteRecording()
                             }
                         }) {
                             HStack {
