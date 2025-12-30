@@ -9,6 +9,9 @@ struct ContentView: View {
     
     @State private var analysisMode: AnalysisMode = .part
     
+    // Disclaimer State
+    @AppStorage("hasAcceptedDisclaimer") private var hasAcceptedDisclaimer = false
+    
     @State private var pulseStart = false
     
     @StateObject private var languageService = LanguageService.shared
@@ -254,6 +257,18 @@ struct ContentView: View {
             .navigationBarHidden(true)
             .sheet(isPresented: $showCamera, onDismiss: analyzeMedia) {
                 CameraManager(selectedImage: $inputImage)
+            }
+            .overlay(
+                Group {
+                    if showDisclaimer {
+                        DisclaimerView(showDisclaimer: $showDisclaimer)
+                    }
+                }
+            )
+            .onAppear {
+                if !hasAcceptedDisclaimer {
+                    showDisclaimer = true
+                }
             }
         }
     }

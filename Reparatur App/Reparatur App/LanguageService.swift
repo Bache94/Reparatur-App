@@ -81,6 +81,28 @@ class LanguageService: ObservableObject {
             return isGerman ? "Community fragen" : "Ask Community"
         case .backToMenu:
             return isGerman ? "Zurück zum Menü" : "Back to Menu"
+        case .disclaimerTitle:
+            return isGerman ? "Wichtiger Sicherheitshinweis" : "Important Safety Warning"
+        case .disclaimerText:
+            return isGerman ? """
+            Bitte beachte, dass dies eine KI-gestützte Anwendung ist. Die Analysen können fehlerhaft sein.
+            
+            Reparaturen an elektrischen Geräten bergen Risiken, insbesondere durch Stromschlag und Brandgefahr.
+            
+            • Trenne das Gerät immer vom Stromnetz, bevor du es öffnest.
+            • Führe Reparaturen nur durch, wenn du über das nötige Fachwissen verfügst.
+            • Wir übernehmen keine Haftung für Schäden an Gerät oder Person.
+            """ : """
+            Please note that this is an AI-powered application. Analyses may be incorrect.
+            
+            Repairing electrical appliances involves risks, especially from electric shock and fire hazards.
+            
+            • Always disconnect the appliance from the mains before opening it.
+            • Only perform repairs if you have the necessary expertise.
+            • We assume no liability for damage to the device or personal injury.
+            """
+        case .acceptDisclaimer:
+            return isGerman ? "Verstanden & Akzeptieren" : "Understand & Accept"
         }
     }
     
@@ -98,5 +120,8 @@ class LanguageService: ObservableObject {
         case cancel
         case communityHelp
         case backToMenu
+        case disclaimerTitle
+        case disclaimerText
+        case acceptDisclaimer
     }
 }
